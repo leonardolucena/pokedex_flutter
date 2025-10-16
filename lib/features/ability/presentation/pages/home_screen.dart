@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../domain/entities/ability.dart';
 import '../bloc/ability_bloc.dart';
+import '../../../../core/utils/url_utils.dart';
+import '../../../../core/di/injection_container.dart';
+import '../../../pokemon/presentation/pages/pokemon_detail_screen.dart';
+import '../../../pokemon/presentation/bloc/pokemon_bloc.dart';
 
 /// Tela inicial com lista de abilities
 class HomeScreen extends StatelessWidget {
@@ -110,16 +114,37 @@ class HomeScreen extends StatelessWidget {
             ),
             trailing: const Icon(Icons.arrow_forward_ios),
             onTap: () {
-              // TODO: Navegar para detalhes da ability
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('Ability: ${ability.name}'),
-                ),
-              );
+              _navigateToPokemonDetail(context, ability);
             },
           ),
         );
       },
     );
+  }
+  
+  /// Navega para a tela de detalhes do Pokemon
+  void _navigateToPokemonDetail(BuildContext context, Ability ability) {
+    // Extrai o ID da URL da ability
+    final pokemonId = UrlUtils.extractIdFromUrl(ability.url);
+    
+    if (pokemonId != null) {
+      // Navega para a tela de detalhes do Pokemon
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) => BlocProvider(
+            create: (context) => getIt<PokemonBloc>(),
+            child: PokemonDetailScreen(pokemonId: pokemonId),
+          ),
+        ),
+      );
+    } else {
+      // Mostra erro se não conseguir extrair o ID
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Erro: Não foi possível extrair o ID do Pokemon da URL: ${ability.url}'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 }
