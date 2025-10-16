@@ -37,7 +37,10 @@ Future<void> configureDependencies() async {
   
   // BLoCs
   getIt.registerFactory<AbilityBloc>(
-    () => AbilityBloc(getIt<GetAbilitiesUseCase>()),
+    () => AbilityBloc(
+      getIt<GetAbilitiesUseCase>(),
+      getIt<GetPokemonByIdUseCase>(),
+    ),
   );
   
   getIt.registerFactory<PokemonBloc>(

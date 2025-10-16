@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../domain/entities/ability.dart';
+import '../../domain/entities/ability_with_pokemon.dart';
 import '../bloc/ability_bloc.dart';
-import '../../../../core/utils/url_utils.dart';
 import '../../../../core/di/injection_container.dart';
 import '../../../pokemon/presentation/pages/pokemon_detail_screen.dart';
 import '../../../pokemon/presentation/bloc/pokemon_bloc.dart';
@@ -116,7 +115,7 @@ class HomeScreen extends StatelessWidget {
     );
   }
   
-  Widget _buildAbilitiesList(List<Ability> abilities) {
+  Widget _buildAbilitiesList(List<AbilityWithPokemon> abilities) {
     return Container(
       decoration: BoxDecoration(
         gradient: LinearGradient(
@@ -132,24 +131,17 @@ class HomeScreen extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         itemCount: abilities.length,
         itemBuilder: (context, index) {
-          final ability = abilities[index];
+          final abilityWithPokemon = abilities[index];
           return PokedexCard(
             margin: const EdgeInsets.only(bottom: 12),
-            onTap: () => _navigateToPokemonDetail(context, ability),
+            onTap: () => _navigateToPokemonDetail(context, abilityWithPokemon),
             child: Row(
               children: [
+                // Imagem do Pokemon
                 Container(
                   width: 60,
                   height: 60,
                   decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [
-                        PokedexTheme.primaryRed,
-                        PokedexTheme.secondaryRed,
-                      ],
-                    ),
                     shape: BoxShape.circle,
                     boxShadow: [
                       BoxShadow(
@@ -159,15 +151,80 @@ class HomeScreen extends StatelessWidget {
                       ),
                     ],
                   ),
-                  child: Center(
-                    child: Text(
-                      '${index + 1}',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 18,
-                      ),
-                    ),
+                  child: ClipOval(
+                    child: abilityWithPokemon.pokemonImageUrl != null
+                        ? Image.network(
+                            abilityWithPokemon.pokemonImageUrl!,
+                            width: 60,
+                            height: 60,
+                            fit: BoxFit.cover,
+                            loadingBuilder: (context, child, loadingProgress) {
+                              if (loadingProgress == null) return child;
+                              return Container(
+                                width: 60,
+                                height: 60,
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
+                                    colors: [
+                                      PokedexTheme.primaryRed,
+                                      PokedexTheme.secondaryRed,
+                                    ],
+                                  ),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: const Center(
+                                  child: CircularProgressIndicator(
+                                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                    strokeWidth: 2,
+                                  ),
+                                ),
+                              );
+                            },
+                            errorBuilder: (context, error, stackTrace) {
+                              return Container(
+                                width: 60,
+                                height: 60,
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
+                                    colors: [
+                                      PokedexTheme.primaryRed,
+                                      PokedexTheme.secondaryRed,
+                                    ],
+                                  ),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: const Icon(
+                                  Icons.catching_pokemon,
+                                  color: Colors.white,
+                                  size: 30,
+                                ),
+                              );
+                            },
+                          )
+                        : Container(
+                            width: 60,
+                            height: 60,
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                                colors: [
+                                  PokedexTheme.primaryRed,
+                                  PokedexTheme.secondaryRed,
+                                ],
+                              ),
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(
+                              Icons.catching_pokemon,
+                              color: Colors.white,
+                              size: 30,
+                            ),
+                          ),
                   ),
                 ),
                 const SizedBox(width: 16),
@@ -175,16 +232,18 @@ class HomeScreen extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      // Nome do Pokemon
                       Text(
-                        ability.name.toUpperCase(),
+                        (abilityWithPokemon.pokemonName ?? 'Pokemon Desconhecido').toUpperCase(),
                         style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                           fontWeight: FontWeight.bold,
                           color: PokedexTheme.primaryRed,
                         ),
                       ),
                       const SizedBox(height: 4),
+                      // Nome da Habilidade
                       Text(
-                        'Habilidade Pokémon',
+                        'Habilidade: ${abilityWithPokemon.ability.name.toUpperCase()}',
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                           color: Colors.grey[600],
                         ),
@@ -199,7 +258,7 @@ class HomeScreen extends StatelessWidget {
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
-                    Icons.catching_pokemon,
+                    Icons.auto_awesome,
                     color: PokedexTheme.accentBlue,
                     size: 24,
                   ),
@@ -213,17 +272,14 @@ class HomeScreen extends StatelessWidget {
   }
   
   /// Navega para a tela de detalhes do Pokemon
-  void _navigateToPokemonDetail(BuildContext context, Ability ability) {
-    // Extrai o ID da URL da ability
-    final pokemonId = UrlUtils.extractIdFromUrl(ability.url);
-    
-    if (pokemonId != null) {
+  void _navigateToPokemonDetail(BuildContext context, AbilityWithPokemon abilityWithPokemon) {
+    if (abilityWithPokemon.pokemonId > 0) {
       // Navega para a tela de detalhes do Pokemon
       Navigator.of(context).push(
         MaterialPageRoute(
           builder: (context) => BlocProvider(
             create: (context) => getIt<PokemonBloc>(),
-            child: PokemonDetailScreen(pokemonId: pokemonId),
+            child: PokemonDetailScreen(pokemonId: abilityWithPokemon.pokemonId),
           ),
         ),
       );
@@ -231,7 +287,7 @@ class HomeScreen extends StatelessWidget {
       // Mostra erro se não conseguir extrair o ID
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Erro: Não foi possível extrair o ID do Pokemon da URL: ${ability.url}'),
+          content: Text('Erro: Não foi possível extrair o ID do Pokemon da URL: ${abilityWithPokemon.ability.url}'),
           backgroundColor: Colors.red,
         ),
       );
