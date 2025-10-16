@@ -6,6 +6,8 @@ import '../../../../core/utils/url_utils.dart';
 import '../../../../core/di/injection_container.dart';
 import '../../../pokemon/presentation/pages/pokemon_detail_screen.dart';
 import '../../../pokemon/presentation/bloc/pokemon_bloc.dart';
+import '../../../../shared/widgets/pokedex_widgets.dart';
+import '../../../../shared/themes/pokedex_theme.dart';
 
 /// Tela inicial com lista de abilities
 class HomeScreen extends StatelessWidget {
@@ -15,8 +17,28 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Pokedex - Abilities'),
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.catching_pokemon,
+              color: PokedexTheme.pokemonYellow,
+              size: 28,
+            ),
+            const SizedBox(width: 8),
+            const Text('POKEDEX'),
+            const SizedBox(width: 8),
+            Icon(
+              Icons.catching_pokemon,
+              color: PokedexTheme.pokemonYellow,
+              size: 28,
+            ),
+          ],
+        ),
+        backgroundColor: PokedexTheme.primaryRed,
+        foregroundColor: Colors.white,
+        elevation: 0,
+        centerTitle: true,
       ),
       body: BlocBuilder<AbilityBloc, AbilityState>(
         builder: (context, state) {
@@ -29,40 +51,55 @@ class HomeScreen extends StatelessWidget {
           }
           
           if (state is AbilityLoadingState) {
-            return const Center(
-              child: CircularProgressIndicator(),
+            return const PokedexLoading(
+              message: 'Carregando Pokedex...',
             );
           }
           
           if (state is AbilityErrorState) {
             return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.error_outline,
-                    size: 64,
-                    color: Colors.red[300],
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    'Erro ao carregar abilities',
-                    style: Theme.of(context).textTheme.headlineSmall,
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    state.message,
-                    textAlign: TextAlign.center,
-                    style: Theme.of(context).textTheme.bodyMedium,
-                  ),
-                  const SizedBox(height: 16),
-                  ElevatedButton(
-                    onPressed: () {
-                      context.read<AbilityBloc>().add(const LoadAbilitiesEvent());
-                    },
-                    child: const Text('Tentar Novamente'),
-                  ),
-                ],
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        color: PokedexTheme.primaryRed.withValues(alpha: 0.1),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        Icons.error_outline,
+                        size: 64,
+                        color: PokedexTheme.primaryRed,
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    Text(
+                      'Erro ao carregar Pokedex',
+                      style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                        color: PokedexTheme.primaryRed,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      state.message,
+                      textAlign: TextAlign.center,
+                      style: Theme.of(context).textTheme.bodyMedium,
+                    ),
+                    const SizedBox(height: 24),
+                    PokedexButton(
+                      text: 'Tentar Novamente',
+                      icon: Icons.refresh,
+                      onPressed: () {
+                        context.read<AbilityBloc>().add(const LoadAbilitiesEvent());
+                      },
+                    ),
+                  ],
+                ),
               ),
             );
           }
@@ -80,45 +117,98 @@ class HomeScreen extends StatelessWidget {
   }
   
   Widget _buildAbilitiesList(List<Ability> abilities) {
-    return ListView.builder(
-      padding: const EdgeInsets.all(16),
-      itemCount: abilities.length,
-      itemBuilder: (context, index) {
-        final ability = abilities[index];
-        return Card(
-          margin: const EdgeInsets.only(bottom: 8),
-          child: ListTile(
-            leading: CircleAvatar(
-              backgroundColor: Theme.of(context).colorScheme.primary,
-              child: Text(
-                '${index + 1}',
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            PokedexTheme.primaryRed.withValues(alpha: 0.05),
+            Colors.transparent,
+          ],
+        ),
+      ),
+      child: ListView.builder(
+        padding: const EdgeInsets.all(16),
+        itemCount: abilities.length,
+        itemBuilder: (context, index) {
+          final ability = abilities[index];
+          return PokedexCard(
+            margin: const EdgeInsets.only(bottom: 12),
+            onTap: () => _navigateToPokemonDetail(context, ability),
+            child: Row(
+              children: [
+                Container(
+                  width: 60,
+                  height: 60,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        PokedexTheme.primaryRed,
+                        PokedexTheme.secondaryRed,
+                      ],
+                    ),
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: PokedexTheme.primaryRed.withValues(alpha: 0.3),
+                        blurRadius: 8,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Center(
+                    child: Text(
+                      '${index + 1}',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 18,
+                      ),
+                    ),
+                  ),
                 ),
-              ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        ability.name.toUpperCase(),
+                        style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: PokedexTheme.primaryRed,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Habilidade Pokémon',
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: Colors.grey[600],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: PokedexTheme.accentBlue.withValues(alpha: 0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.catching_pokemon,
+                    color: PokedexTheme.accentBlue,
+                    size: 24,
+                  ),
+                ),
+              ],
             ),
-            title: Text(
-              ability.name,
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
-              ),
-            ),
-            subtitle: Text(
-              'URL: ${ability.url}',
-              style: TextStyle(
-                color: Colors.grey[600],
-                fontSize: 12,
-              ),
-            ),
-            trailing: const Icon(Icons.arrow_forward_ios),
-            onTap: () {
-              _navigateToPokemonDetail(context, ability);
-            },
-          ),
-        );
-      },
+          );
+        },
+      ),
     );
   }
   

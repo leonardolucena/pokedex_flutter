@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'core/di/injection_container.dart';
 import 'features/ability/presentation/bloc/ability_bloc.dart';
 import 'features/ability/presentation/pages/home_screen.dart';
+import 'shared/themes/pokedex_theme.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -17,10 +18,9 @@ class PokedexApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Pokedex Flutter',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
-        useMaterial3: true,
-      ),
+      theme: PokedexTheme.lightTheme,
+      darkTheme: PokedexTheme.darkTheme,
+      themeMode: ThemeMode.system,
       home: BlocProvider(
         create: (context) => getIt<AbilityBloc>(),
         child: const HomeScreen(),
