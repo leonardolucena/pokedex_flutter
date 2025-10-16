@@ -1,0 +1,112 @@
+# Regras de Desenvolvimento - Pokedex Flutter
+
+## Versão do Flutter
+- **Versão Target**: Flutter 3.27.x
+- Usar apenas APIs e recursos compatíveis com Flutter 3.27
+- Verificar compatibilidade de pacotes com Flutter 3.27
+- Evitar usar recursos experimentais ou deprecated
+- Manter código atualizado com as melhores práticas do Flutter 3.27
+
+## Arquitetura e Padrões
+- **Arquitetura**: Clean Architecture com padrão MVVM (Model-View-ViewModel)
+- **Gerenciamento de Estado**: BLoC Pattern (flutter_bloc) - NÃO usar Provider
+- **Injeção de Dependência**: get_it ou similar
+- **Separação de Responsabilidades**: Seguir os princípios SOLID
+
+## Estrutura de Pastas
+```
+lib/
+├── core/                    # Funcionalidades centrais
+│   ├── constants/          # Constantes da aplicação
+│   ├── errors/             # Tratamento de erros
+│   ├── network/            # Configurações de rede
+│   └── utils/              # Utilitários gerais
+├── features/               # Features da aplicação
+│   └── pokemon/            # Feature específica
+│       ├── data/           # Camada de dados
+│       │   ├── datasources/ # Fontes de dados (API, Local)
+│       │   ├── models/     # Modelos de dados
+│       │   └── repositories/ # Implementação dos repositórios
+│       ├── domain/         # Camada de domínio
+│       │   ├── entities/   # Entidades de negócio
+│       │   ├── repositories/ # Contratos dos repositórios
+│       │   └── usecases/   # Casos de uso
+│       └── presentation/   # Camada de apresentação
+│           ├── bloc/       # BLoCs
+│           ├── pages/      # Páginas/Telas
+│           └── widgets/    # Widgets específicos
+└── shared/                 # Componentes compartilhados
+    ├── widgets/            # Widgets reutilizáveis
+    └── themes/             # Temas e estilos
+```
+
+## Regras de Código
+
+### BLoC Pattern
+- Usar `flutter_bloc` para gerenciamento de estado
+- Criar Events, States e Bloc para cada feature
+- Implementar BlocBuilder/BlocListener nas telas
+- Usar BlocProvider para injeção de dependência
+
+### Clean Code
+- Nomes descritivos e em inglês para variáveis, funções e classes
+- Funções pequenas e com responsabilidade única
+- Evitar código duplicado (DRY - Don't Repeat Yourself)
+- Comentários apenas quando necessário para explicar lógica complexa
+- Usar construtores nomeados quando apropriado
+
+### Clean Architecture
+- **Domain Layer**: Entidades e casos de uso puros (sem dependências externas)
+- **Data Layer**: Implementação dos repositórios e fontes de dados
+- **Presentation Layer**: UI, BLoCs e widgets
+
+### Tratamento de Erros
+- Usar Either<Failure, Success> ou Result pattern
+- Criar classes de erro específicas
+- Tratar erros de rede, validação e exceções
+
+### Testes
+- Testes unitários para casos de uso e BLoCs
+- Testes de integração para repositórios
+- Testes de widget para componentes UI
+
+### Convenções de Nomenclatura
+- Classes: PascalCase (ex: PokemonBloc, PokemonRepository)
+- Variáveis e funções: camelCase (ex: getPokemonList, isLoading)
+- Arquivos: snake_case (ex: pokemon_bloc.dart, pokemon_repository.dart)
+- Constantes: UPPER_SNAKE_CASE (ex: API_BASE_URL)
+
+### Imports
+- Organizar imports em ordem: dart, flutter, packages, local
+- Usar imports relativos apenas para arquivos na mesma pasta
+- Evitar imports desnecessários
+
+### Documentação
+- Documentar APIs públicas com comentários DartDoc
+- Manter README.md atualizado
+- Documentar decisões arquiteturais importantes
+
+## Tecnologias e Pacotes Recomendados
+- **Estado**: flutter_bloc, equatable
+- **Rede**: dio, retrofit
+- **Injeção**: get_it, injectable
+- **Serialização**: json_annotation, json_serializable
+- **Testes**: bloc_test, mockito, flutter_test
+- **UI**: flutter_screenutil (responsividade)
+
+## Boas Práticas
+- Sempre usar const para widgets que não mudam
+- Implementar loading states e error states
+- Usar keys apropriadas para widgets em listas
+- Otimizar performance com construtores const
+- Implementar paginação para listas grandes
+- Usar debounce para pesquisas
+- Implementar cache quando apropriado
+
+## Análise e Qualidade de Código
+- **SEMPRE** executar `flutter analyze` após criar/modificar código
+- Corrigir todos os erros e warnings imediatamente
+- Não deixar acumular problemas na aba "Problems"
+- Manter o código sempre limpo e sem erros de análise
+- Usar `flutter format` para manter formatação consistente
+- Executar `flutter test` para garantir que testes passem
