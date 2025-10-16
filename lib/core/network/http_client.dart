@@ -20,7 +20,6 @@ class HttpClient {
   /// Configuração do Dio
   void _configureDio() {
     _dio.options = BaseOptions(
-      baseUrl: NetworkConstants.pokeApiBaseUrl,
       connectTimeout: NetworkConstants.connectTimeout,
       receiveTimeout: NetworkConstants.receiveTimeout,
       sendTimeout: NetworkConstants.sendTimeout,

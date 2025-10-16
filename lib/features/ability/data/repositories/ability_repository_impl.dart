@@ -1,4 +1,5 @@
 import '../../../../core/network/http_client.dart';
+import '../../../../core/network/api_gateway.dart';
 import '../../../../core/constants/network_constants.dart';
 import '../../domain/entities/ability.dart';
 import '../../domain/repositories/ability_repository.dart';
@@ -15,10 +16,11 @@ class AbilityRepositoryImpl implements AbilityRepository {
     int offset = NetworkConstants.defaultOffset,
   }) async {
     try {
-      final endpoint = 'ability/';
+      // Usa o API Gateway para construir a URL completa
+      final url = ApiGateway.buildUrl('ability/');
       
       final response = await _httpClient.get(
-        endpoint,
+        url,
         queryParameters: {
           'limit': limit,
           'offset': offset,
@@ -40,9 +42,10 @@ class AbilityRepositoryImpl implements AbilityRepository {
   @override
   Future<Ability> getAbilityById(int id) async {
     try {
-      final endpoint = 'ability/$id';
+      // Usa o API Gateway para construir a URL completa
+      final url = ApiGateway.buildUrl('ability/$id');
       
-      final response = await _httpClient.get(endpoint);
+      final response = await _httpClient.get(url);
       
       final model = AbilityModel.fromJson(
         response.data as Map<String, dynamic>,
